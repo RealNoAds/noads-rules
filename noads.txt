@@ -1,0 +1,405 @@
+! Title: NoAds Rules
+! Last modified: 2026-09-28
+! Description: Gaps the big public lists do not cover, to be used along EasyList
+! Homepage: https://github.com/RealNoAds/noads-rules
+! License: https://github.com/RealNoAds/noads-rules/blob/main/LICENSE
+! Version: 20260928
+! Expires: 1 day
+! Rules: 125
+!
+! Additive: layer this on top of EasyList, EasyPrivacy, uBlock Origin's uAssets and
+! AdGuard German, never instead of them. Every rule was measured against a live
+! render before it was added. This list is a set of gaps, not a fork — when an
+! upstream list starts covering a rule, the rule gets deleted here.
+!
+! GitHub issues: https://github.com/RealNoAds/noads-rules/issues
+
+! START: ad-tech the upstream lists under-block
+
+! 2026-08-16 echo-online.de: VRM's own ad server delivers 9 creatives, 371 KB, including a 165 KB image — nothing covers the host
+! Upstream already blocks two other meine-vrm.de subdomains, so the intent is settled; this one is simply missing
+||ad.meine-vrm.de^
+
+! 2026-08-16: Reach plc's Mantis platform loads ~150-170 KB TWICE per page on 11 UK regional titles and no list covers this domain
+! EasyPrivacy and AdGuard Tracking already block ||loader.mantis-intelligence.com^$3p — the intent is settled, they just lack this domain
+||mantis-awx.com^$3p
+
+! 2026-07-04: EasyList @@-exempts GPT's ad-serving engine on ~20 publishers (accuweather.com, bloomberg.com) — ~36 KB, loading full-size
+||g.doubleclick.net/gpt/pubads_impl_$important
+
+! 2026-07-04: EasyList @@-exempts the GPT loader on ~35 publishers (bloomberg.com, ...), so it runs full-size instead of getting uBO's stub
+! Redirected to that stub rather than blocked, so ad-slot .js calls don't throw
+||g.doubleclick.net/tag/js/gpt.js$script,redirect=googletagservices_gpt.js:5,important
+
+! 2026-07-04 autobild.de: Axel Springer's ad library (/adlib/ only, so asadcdn's other paths survive) and its Azure viewability SDK
+! Upstream covers asadcdn's /adlib/ only for sport1.de
+||asadcdn.com/adlib/
+||adsdkprod.azureedge.net^
+
+! DoubleVerify viewability/fraud beacons — an upstream @@ let it load full-size (34 KB) on bbc.co.uk
+||pub.doubleverify.com^$important
+
+! Sailthru / Marigold "Horizon" onsite marketing tracker (apnews.com, cnbc.com) — no user-facing function
+||sail-horizon.com^
+
+! Not blocked on purpose: assets.adobedtm.com and connect.facebook.net are dual-use, and neither served a visible ad
+! A blanket block risks site JS and social login, so they are left to upstream's scoped rules
+
+! 2026-07-05: EasyList @@-exempts Integral Ad Science's iasPET on independent.co.uk, reuters.com, wsj.com, ladbible
+||adsafeprotected.com^$important
+
+! 2026-07-05: EasyList @@-exempts Condé Nast's own ad server for wired.com. Host-wide, so it covers every Condé title
+||ads-static.conde.digital^$important
+
+! 2026-07-05: upstream blocks Taboola third-party-only and @@-exempts libtrc (dailymail.co.uk, foxsports.com, vix.com, the German press)
+! Host-wide, so it also catches cdn.taboola.com served first-party
+||cdn.taboola.com^$important
+
+! 2026-07-05: EasyList @@-exempts Rubicon/Magnite's prebid loader on mirror.co.uk, dailystar.co.uk, weather.com, la7.it and others
+||micro.rubiconproject.com^$important
+
+! 2026-07-05: Comscore's beacon leaks when a publisher serves it first-party — upstream is third-party-only
+! Deliberately not $important: the beacon.js redirect stub must keep winning, or COMSCORE.beacon() callers throw
+||scorecardresearch.com^
+
+! 2026-07-05: AdsWizz's ad code on cdn. leaks when served first-party (soundcloud.com) — upstream is third-party-only
+! No $important, so the legitimate streaming exceptions on AdsWizz's other hosts stay intact
+||cdn.adswizz.com^
+
+! 2026-07-05: upstream @@-exempts Cxense/Piano's cx.js per publisher (mega.cl, itmedia.co.jp, elconfidencial.com, journaldemontreal.com)
+! and softens the domain rule to $3p, so cdn. first-party is missed
+||cdn.cxense.com^$important
+
+! 2026-08-19 soccersuck.com: adsabay.com is an ad server no shipped list covers — 810 KB over 15 requests, creatives up to 588 KB
+! Blocking the loader stops the other 14 requests and costs the page nothing: body text 341 -> 339 chars, DOM 8,274 -> 8,246 nodes
+||adsabay.com^
+
+! 2026-08-19 auction.co.kr: ad-img.gmarket.com serves display creatives under /ADS/ and no shipped list covers it — 114 KB over 2 hits
+! Path-scoped deliberately: the host is in the site's own corporate group, and the product imagery comes from image.gmarket.co.kr
+||ad-img.gmarket.com/ADS/
+
+! 2026-08-19 inews.id: analytics.mncplus.com is MNC's own analytics SDK — mncanalytics.min.js plus POST beacons, uncovered by every list
+! Blocking it changes nothing visible: body text, article text, painted images, links and paragraphs are all identical with and without it
+||analytics.mncplus.com^
+
+! 2026-08-21 ann-so.com/phimsexgg.pro: ads.bizwd.net fills a full-screen ad interstitial plus two leaderboards, and no list covers it here
+! AdGuard's Vietnamese list already carries ||ads.bizwd.net^$image — the intent is settled, the rule is just pinned to one unrelated domain
+||ads.bizwd.net^$third-party
+
+! END: ad-tech the upstream lists under-block
+
+! START: anti-adblock walls
+
+! 2026-07-04 tomshardware.com: Ad-Shield's own infrastructure. lib.js renders ads in its iframe, then walls the article when it can't
+! Dedicated anti-adblock hosts with no first-party use, so the vendor is blocked wholesale — one rule per site embedding the SaaS
+||html-load.com^
+||content-loader.com^
+||css-load.com^
+||error-report.com^
+
+! 2026-07-05 autobild.de, computerbild.de: Ad-Shield's loader tag blanks the page and escalates to a redirect from its own onload/onerror
+! Removing the tag TRIGGERS the wall, so it stays — the scriptlet denies the watchdog the main-realm primitives it needs instead
+autobild.de,computerbild.de,bild.de,tomshardware.com,notebookcheck.com##+js(adshield, error-report.com)
+
+! bild.de sets its wall flag during hydration, out of reach of a response-body rewrite
+! uBO's inline-script layer names an alias that is not vendored here and silently no-ops, so it is re-stated under the canonical name
+bild.de##+js(replace-node-text, script, "adBlockWallEnabled":true, "adBlockWallEnabled":false)
+
+! 2026-07-09: bild.de has a second wall trigger that ignores the flag — with the SDK stubbed, an inline destroy fn blanks the body
+! and navigates to /adblockwall.html. An early return neutralizes it in the response bytes, before any of it runs
+||bild.de^$doc,replace=/(=async function\([a-z]\)\{)(try\{try\{localStorage\.setItem)/${1}return;${2}/
+
+! pornhub.com's anti-adblock nag bar. Ads are blocked and the page is fully readable, so this is a nag rather than a wall — cosmetic only
+pornhub.com###abAlert
+
+! END: anti-adblock walls
+
+! START: first-party and native ad slots
+
+! 2026-07-10 chip.de, bunte.de, focus.de: Burda serves native "Anzeige" teasers from the SAME image CDN as its editorial photos
+! No network rule can separate the two, so the ad is hidden at the <article>, keyed on Burda's own ad badge
+chip.de##article:has(div.RUC-Badge--Secondary)
+bunte.de##article:has(div.RUC-TeaserBadge-Ad)
+chip.de,focus.de##article.StageCarousel-Item--FixedTeaserSlot
+focus.de##article.BlockItem--Article--FixedTeaserSlot
+
+! 2026-07-05 wetter.com: native "ANZEIGE" newsfeed teasers and display slots both carry .adRelative (6 live matches, 0 editorial)
+wetter.com##.adRelative
+wetter.com##div[data-ad-type]
+
+! 2026-07-05 giga.de, familie.de: Alice-CMS ad containers; the :has rule hides the native "nativendo" list item
+giga.de,familie.de##.alice-adslot
+giga.de##div[data-sdg-ad]
+giga.de##div[data-item="ads-container"]
+giga.de##li:has(> div[data-role="alice-nativendo"]:only-child)
+
+! 2026-07-05 slate.com: the footer ad (1 live visible "Advertising AdChoices") plus the article-page ad slots
+slate.com##.global-footer__ad
+slate.com##.ad--lngtd
+slate.com##.ad--inArticleBanner
+
+! 2026-07-05 apnews.com: .Advertisement is the literal ad-slot class — 23 empty slots survive the block. .FeedAd is the in-feed variant
+apnews.com##.Advertisement
+apnews.com##.FeedAd
+
+! 2026-07-05 aol.com, aol.de: the "From our Partners" Taboola/partner module
+aol.com,aol.de##.m-taboola
+aol.com,aol.de##.m-partner
+
+! 2026-07-05 azlyrics.com: the leaderboard ad wrapper (1 live empty 1425x311 banner slot) and the ringtone-ad block
+azlyrics.com##.lboard-wrap
+azlyrics.com##.ringtone
+
+! 2026-07-05 cointelegraph.com: CSS-module ad-slot hashes and the promo/leaderboard/listing-banner containers
+cointelegraph.com##div[class*="ad-slot_"]
+cointelegraph.com##.layout__leaderboard
+cointelegraph.com##.post-preview-item-banner
+cointelegraph.com##.posts-listing__bnr
+cointelegraph.com##.stretch-promo-banner
+cointelegraph.com##.xgo-banner
+
+! 2026-07-05 spiegel.de, the gala family, heise.de: literally ad-named containers, so editorial-collision risk is nil
+spiegel.de,manager-magazin.de##section[data-area="block>adblock"]
+gala.de,stern.de,brigitte.de,vorname.com,urbia.de##.group--adtag-with-fallbackcontent
+heise.de##section[data-component="AdModule"]
+
+! 2026-08-04 chefkoch.de: a 300x568 blank box that still reserves layout after the ad is blocked, and which no shipped list covers
+chefkoch.de##.recipesOfTheDay__ad-container
+
+! 2026-08-04 hbr.org: EasyList's rule pins a CSS-module hash that has rotated, so it cannot match this 1210x318 blank slot
+! Matched on the stable fragments either side of the hash instead, so the next rotation does not silently re-open it
+hbr.org##[class*="AdSlotZone"][class*="ad-container"]
+
+! END: first-party and native ad slots
+
+! START: surrogate redirects
+
+! 2026-07-30: both of these initialise inside their own script's onload, so a blocked-but-successful response runs the callback anyway
+! Seen as "UET is not defined" (filehippo.com, softonic.com, wsj.com) and "nol_t is not defined" (wsj.com, via Tealium's Nielsen tag)
+! A no-op stub sends exactly the same zero tracking data as a block
+||bat.bing.com/bat.js$script,redirect=noads_bing_uet.js
+||imrworldwide.com/v60.js$script,redirect=noads_nielsen.js
+
+! END: surrogate redirects
+
+! START: unbreak
+
+! 2026-07-22: two upstream $other-scoped exceptions were in practice exempting IFRAMES, and stopped applying once iframes got their own type
+! Re-stated with the correct type — same host, same path shape, same domain= scope, so no new site is exempted
+@@||tpc.googlesyndication.com/safeframe/*/container.html$subdocument,domain=abola.pt
+@@||ad3.adfarm1.adition.com^$subdocument,domain=servustv.com
+
+! 2026-08-19: first-id.fr is a top-level NAVIGATION hop, not just a tracker sub-resource
+! Blocking it left capital.fr and sudouest.fr as blank white pages; only the page hop is exempt, its sub-resources stay blocked
+@@||first-id.fr^$document
+
+! 2026-08-20: EasyList's ||brightline.tv^$third-party blocks the Brightline player's config, and the player retries it forever
+! Measured on cnn.com: 13,061 requests to one URL in 25s (~520/s), all ERR_FAILED -- the page never idles and screenshots time out
+@@||cdn-media.brightline.tv/config/v*.json
+
+! 2026-09-09: EasyList Thailand's bare ||inmobi.com blocks inmobi.com's own CSS and JS, so its site neither styles nor hydrates
+! uBO's ||inmobi.com^$badfilter cannot reach it -- badfilter needs an exact pattern and the upstream rule has no ^
+@@||inmobi.com^$~third-party
+
+! 2026-09-22: /css/ads-$stylesheet empties vice.com's own ads-free membership stylesheet; the DIRECT control loads it
+@@||vice.com/wp-content/plugins/savage-membership-chargebee/assets/css/ads-free-modal.css$stylesheet,domain=vice.com
+
+! END: unbreak
+
+! START: client-rendered ad slots
+
+! 2026-08-16 theverge.com: 27 .m-ad slots on the homepage, 14 of them painted, largest 300x160
+! EasyList's generic ##.m-ad never fires here: the class is added at hydration, so the served HTML never carries the token
+theverge.com##.m-ad
+
+! 2026-08-16 aol.com: the video.js IMA3 ad container renders 543x407 and EMPTY once its ad is blocked, over the player
+aol.com,aol.de##.vjs-ima3-ad-container
+
+! 2026-08-16 cnet.com, speedtest.net: the AdChoices floating button outlives its ad as a 27x25 fixed icon
+cnet.com,speedtest.net###zdcFloatingBtn
+
+! END: client-rendered ad slots
+
+! START: empty ad slots left behind
+
+! 2026-08-16 thesun.co.uk: 6 billboard modules, largest 1440x330, each labelled "Advertisement" and containing nothing
+thesun.co.uk##.module--1-billboard
+
+! 2026-08-16 bloomberg.com: 25 ad containers, 6 painted, largest 1425x288, no text in any of them
+bloomberg.com##[class^="media-ui-BaseAd_baseAd"]
+
+! 2026-08-16 usnews.com: 25 ad containers, 14 painted, largest 1180x110, no text
+usnews.com##[class^="Ad__Container-sc-"]
+
+! 2026-08-16 cnn.com: .container__ads 49 nodes, 3 painted to 438x294; .zone__ads 8 nodes, 4 painted to 1361x134
+! Both hold nothing but an "Ad Feedback" link once the creative is blocked
+cnn.com##.container__ads
+cnn.com##.zone__ads
+
+! 2026-08-16 sport1.de: 12 s1-ad-container nodes, 6 painted, largest 339x333, all empty
+sport1.de##.s1-ad-container
+
+! 2026-08-16 rtl.de: two 301x400 Outbrain slots, painted and completely empty
+rtl.de##[class^="AdSlot_outbrainWrapper"]
+
+! 2026-08-16 foodnetwork.com: two 1425x64 ad modules, painted, no content
+foodnetwork.com,foodnetwork.co.uk##.module--ad-module-primary
+
+! 2026-08-16 nicovideo.jp: a 316x266 slot with zero children — the emptiest box in the corpus
+nicovideo.jp###pc_uni_top_300x250_east
+
+! 2026-08-16 twitch.tv: the 1185x350 headliner ad, labelled "Werbung"
+twitch.tv##.headliner-ad
+
+! 2026-08-16 aol.com: two 1360x290 and 1360x130 boxes reading "Advertisement", plus a 300x491 rail slot
+aol.com,aol.de##.em-module:has(.m-gam)
+
+! 2026-08-16 uol.com.br: four labelled ad areas standing empty, largest 1190x404 — textContent is literally ""
+! Excludes .cardProducts: that one is FILLED with UOL's own products — UOL Host, PagBank, cinema/streaming
+! The publisher's own business, not an ad we blocked, so not ours to hide
+uol.com.br##.advertisementArea--showLabel:not(.cardProducts)
+
+! 2026-08-16 sina.com.cn: a 240x239 box named SI_EDU_AD carrying Taobao promo links
+sina.com.cn###SI_EDU_AD
+
+! 2026-08-16 giga.de: two empty 25x5785 skyscraper rails, one down each side of the page, reserved and never filled
+giga.de##[class*="alice-root-header-ads__ad-container"]
+
+! 2026-08-16 moz.de, lr-online.de: nine named ad slots per page; the right skyscraper paints 160x600 and holds nothing
+moz.de,lr-online.de##.u-adSlot
+
+! 2026-08-16 otz.de: eight ad-slot wrappers, five painted, largest 980x270 and empty
+otz.de##.ad-slot-wrapper
+
+! 2026-08-16 freundin.de, instyle.de: six and seven "Anzeige" placements, every one painted, up to 1440x500
+freundin.de,instyle.de##[class*="ad_placement"]
+
+! 2026-08-16 ksta.de, express.de: a 300x621 sticky rail reading "ANZEIGE", empty, out of 18-21 ad containers
+ksta.de,express.de##.bg-ad-container
+
+! 2026-08-16 fussballdaten.de: five ad-label holders, three painted, largest 1030x301, no content
+fussballdaten.de##.ad-label-holder
+
+! 2026-08-16 prisma.de: a 970x300 placeholder with zero children — nothing in it at all
+prisma.de##.ads-with-placeholder
+
+! 2026-08-16 ran.de: three 1032x330 boxes labelled "- Anzeige -", each holding nothing but an empty ad slot
+! Keyed on the slot id `ran_D_*` via :has(), not on the MUI emotion hash that is the box's only class
+ran.de,ran.joyn.de##div:has(> div > div[id^="ran_D_"])
+
+! 2026-08-18 forbes.pl: 5 reserved boxes, all labelled "REKLAMA", all empty
+forbes.pl##.placeholder.wide
+
+! 2026-08-20 dailynorseman.com, sbnation.com: 12 painted ad containers per page, largest 1249x60, the rest 700x66 — all completely empty
+! Vox Media "duet", the same `.m-ad` anchor already shipped for theverge.com; measured on two SB Nation titles, not assumed from one
+dailynorseman.com,sbnation.com##.m-ad
+
+! 2026-08-20 leki.pl: 8 painted 338x293 ad-server banner blocks, every one labelled "Reklama" and holding nothing
+leki.pl##.adserver-banner-block
+leki.pl##.wp-block-column:has(> .polecane-reklama)
+
+! 2026-08-20 the mcrecheck empty-slot bucket — 16 sites, every selector measured LIVE
+
+! 2026-08-20 gazzetta.gr, insider.gr: DFP tag containers left reserved and empty, largest 1425x250
+gazzetta.gr,insider.gr##[id^="block-dfptag"]
+
+! 2026-08-20 gazzetta.gr: a 300x110 empty ad tile sitting among the live match tiles in the ticker
+gazzetta.gr##div.match.ad
+
+! 2026-08-20 politika.rs: 5 painted ad placeholders, largest 1425x301, all empty
+politika.rs##.desktop-ad-placeholder
+
+! 2026-08-20 mindluster.com: 6 painted 1425x170 ad slots between the home sections, all empty
+mindluster.com##.v2-ad-slot
+
+! 2026-08-20 diariodecadiz.es, laregion.es: reserved "board-advertising" boxes, largest 352x693
+diariodecadiz.es,laregion.es##.board-advertising
+
+! 2026-08-20 clicrbs.com.br: 3 painted 402x254 rectangle slots, all empty
+clicrbs.com.br##.slot-retangulo-medio
+
+! 2026-08-20 leboncoin.fr: a 1425x264 header-bidding slot holding nothing
+leboncoin.fr##.apn-hb
+
+! 2026-08-20 adformatie.nl: 4 painted ad slots, largest 1146x52, each showing only its label
+adformatie.nl##.c-ad-slot
+
+! 2026-08-20 mgtv.com: 2 painted 384x334 feed ads, both empty
+mgtv.com##.feed-ad
+
+! 2026-08-20 h1g.jp: a 904x124 main-body ad strip holding nothing
+h1g.jp##.ad-mainbody
+
+! 2026-08-20 ig.com.br: a 285x270 sponsored-video box, empty; three nested wrappers all collapse
+ig.com.br###ad_sponsor_video
+
+! 2026-08-20 demotywatory.pl: a 300x600 sky banner, empty
+demotywatory.pl###dmty-sky-right
+
+! 2026-08-20 demotywatory.pl: 4 more ad boxes shaped exactly like the site's own posts
+demotywatory.pl##article:has(> div.demotivator:not([id]))
+
+! 2026-08-20 sport1.de: a 1041x164 native-ad box whose reserved space is held by its GRANDPARENT
+sport1.de##div:has(> div > #pinpoll-native-ad)
+
+! 2026-08-20 diretta.it: a 156x260 ad zone in the left menu, empty
+diretta.it##div.banner:has(> [id^="zoneContainer-"])
+
+! 2026-08-20 squaremeal.co.uk: a 1425x74 strip whose only content is the word "ADVERTISEMENT"
+squaremeal.co.uk##div#MainContent_pnlDynamicHomeControl > div.bg-light.py-4
+
+! 2026-08-21 the deus500 empty-slot bucket — 6 sites, every selector verified LIVE through NoAds
+
+! 2026-08-21 harpersbazaar.de: 6 reserved slots, 500/500/300/300/300/300, an eighth of the page held blank
+! The container is transparent; what the reader sees is the child "Anzeige" label and a faint BAZAAR watermark in the hole
+harpersbazaar.de##[class*="ad_placement"]
+
+! 2026-08-21 bildderfrau.de: 6 Pimcore advertisement bricks, the first 280x1108 and painted blank, the rest already at 0-15px
+bildderfrau.de##.pimcore_area_advertisement
+
+! 2026-08-21 vienna.at: 10 ad boxes, three holding 250/204/250 px open, all three above the fold
+! The top one pushes the site's own masthead down by a quarter-screen before any content appears
+vienna.at##.vodl-ad
+
+! 2026-08-21 theleader.com.au: a 1425x274 grey billboard band above the masthead, holding a 2-character "Ad" chip
+theleader.com.au##div#billboard-container
+
+! 2026-08-21 stockhead.com.au: a 1425x162 band above the masthead whose only content is a CSS ::after "ADVERTISEMENT"
+stockhead.com.au##div#masthead_promo
+
+! 2026-08-21 thansettakij.com: a 1300x90 grey in-article strip above the "latest news" heading
+thansettakij.com##[class*="ads-inarticle"]
+
+! 2026-09-02 the rs40a empty-slot bucket — 13 slot-bearing sites of a 40-site resweep, every selector measured LIVE through NoAds
+
+! 2026-09-02 fitforfun.de: 18 Ad-Slot containers, 10 painted, largest 956x250, each holding only its "ANZEIGE" label
+fitforfun.de##.Ad-Slot
+
+! 2026-09-02 donnerwetter.de: one 546x150 content banner, empty but for its "Anzeige" label
+donnerwetter.de##.banner-content1
+
+! 2026-09-02 morgenpost.de, wp.de: five painted 980x270 Spark ad-slot asides per page, nothing inside
+morgenpost.de,wp.de##.ad-slot-wrapper
+
+! 2026-09-02 gbnews.com: a 940x300 billboard wrapper under "ADVERTISEMENT", holding a hidden <ad-slot> and nothing else
+gbnews.com##.desktop-billboard
+
+! 2026-09-02 stuttgarter-nachrichten.de, stuttgarter-zeitung.de, schwarzwaelder-bote.de: the 160x600 right skyscraper rail, grey and empty
+stuttgarter-nachrichten.de,stuttgarter-zeitung.de,schwarzwaelder-bote.de##.u-adSlot--sky-right
+
+! 2026-09-02 lvz.de: the "Aktuelle Prospekte / Aktuelle Beilagen" flyer widgets, 976x272, two headings over nothing
+lvz.de##[class*="AutomaticWeekliWidgetstyled__ChainLikeContainer"]
+
+! 2026-09-02 moviepilot.de: the 320x600 rail and 992x250 in-feed DFP wrappers, grey with an "Anzeige" tab, empty
+moviepilot.de##div:has(> div#dfp-atf), div:has(> div#dfp-mtf)
+
+! 2026-09-02 lz.de: the "Leserreisen" carousel, 1020x522 of loading spinner under an "Anzeige" tag
+lz.de##.container-anzeige.leserreisen
+
+! 2026-09-09 spiegel.de: the three homepage "topbox" ad slots, 288x196 each in a 1008x244 band, spinning forever
+spiegel.de##div:has(> div[data-target-id^="hp-topbox"])
+
+! 2026-09-11 welt.de: the "pub_a" teaser slot, 283x381 of empty rail under an Anzeige chip
+welt.de##div.u-grid-item:has(.c-ad-teaser)
+
+! END: empty ad slots left behind
