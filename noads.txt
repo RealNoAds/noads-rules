@@ -1,9 +1,9 @@
 ! Title: NoAds Rules
-! Last modified: 2026-09-28
+! Last modified: 2026-10-12
 ! Description: Gaps the big public lists do not cover, to be used along EasyList
 ! Homepage: https://github.com/RealNoAds/noads-rules
 ! License: https://github.com/RealNoAds/noads-rules/blob/main/LICENSE
-! Version: 20260928
+! Version: 20261012
 ! Expires: 1 day
 ! Rules: 125
 !
@@ -201,7 +201,7 @@ hbr.org##[class*="AdSlotZone"][class*="ad-container"]
 ! uBO's ||inmobi.com^$badfilter cannot reach it -- badfilter needs an exact pattern and the upstream rule has no ^
 @@||inmobi.com^$~third-party
 
-! 2026-09-22: /css/ads-$stylesheet empties vice.com's own ads-free membership stylesheet; the DIRECT control loads it
+! 2026-09-22: /css/ads-$stylesheet empties vice.com's own ads-free membership stylesheet, which loads fine without the block
 @@||vice.com/wp-content/plugins/savage-membership-chargebee/assets/css/ads-free-modal.css$stylesheet,domain=vice.com
 
 ! END: unbreak
@@ -245,7 +245,7 @@ rtl.de##[class^="AdSlot_outbrainWrapper"]
 ! 2026-08-16 foodnetwork.com: two 1425x64 ad modules, painted, no content
 foodnetwork.com,foodnetwork.co.uk##.module--ad-module-primary
 
-! 2026-08-16 nicovideo.jp: a 316x266 slot with zero children — the emptiest box in the corpus
+! 2026-08-16 nicovideo.jp: a 316x266 slot with zero children
 nicovideo.jp###pc_uni_top_300x250_east
 
 ! 2026-08-16 twitch.tv: the 1185x350 headliner ad, labelled "Werbung"
@@ -298,8 +298,6 @@ dailynorseman.com,sbnation.com##.m-ad
 leki.pl##.adserver-banner-block
 leki.pl##.wp-block-column:has(> .polecane-reklama)
 
-! 2026-08-20 the mcrecheck empty-slot bucket — 16 sites, every selector measured LIVE
-
 ! 2026-08-20 gazzetta.gr, insider.gr: DFP tag containers left reserved and empty, largest 1425x250
 gazzetta.gr,insider.gr##[id^="block-dfptag"]
 
@@ -348,8 +346,6 @@ diretta.it##div.banner:has(> [id^="zoneContainer-"])
 ! 2026-08-20 squaremeal.co.uk: a 1425x74 strip whose only content is the word "ADVERTISEMENT"
 squaremeal.co.uk##div#MainContent_pnlDynamicHomeControl > div.bg-light.py-4
 
-! 2026-08-21 the deus500 empty-slot bucket — 6 sites, every selector verified LIVE through NoAds
-
 ! 2026-08-21 harpersbazaar.de: 6 reserved slots, 500/500/300/300/300/300, an eighth of the page held blank
 ! The container is transparent; what the reader sees is the child "Anzeige" label and a faint BAZAAR watermark in the hole
 harpersbazaar.de##[class*="ad_placement"]
@@ -369,8 +365,6 @@ stockhead.com.au##div#masthead_promo
 
 ! 2026-08-21 thansettakij.com: a 1300x90 grey in-article strip above the "latest news" heading
 thansettakij.com##[class*="ads-inarticle"]
-
-! 2026-09-02 the rs40a empty-slot bucket — 13 slot-bearing sites of a 40-site resweep, every selector measured LIVE through NoAds
 
 ! 2026-09-02 fitforfun.de: 18 Ad-Slot containers, 10 painted, largest 956x250, each holding only its "ANZEIGE" label
 fitforfun.de##.Ad-Slot
